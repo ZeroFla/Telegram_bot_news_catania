@@ -2,177 +2,338 @@ import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, ApplicationBuilder, CommandHandler, CallbackQueryHandler
 
-# Ogni volta che succede qualcosa, scrive l'orario esatto (asctime), chi sta parlando (name), quanto è grave (levelname) e il messaggio
+#--- CONFIGURAZIONE --- 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
 
-# --- CONFIGURAZIONE FINTA DEL DATABASE ---
-# Questo dizionario simula il database che gestisci col tuo collega.
-# In produzione, qui userai SQL o Mongo.
+# --- CONFIGURAZIONE DEL DATABASE ---
+# simulazione database da sostituire con SQL
 MOCK_DB = {}
-
 def salva_su_db(user_id, dati):
     """Simula il salvataggio finale sul database condiviso"""
     print(f"💾 SALVATAGGIO DB per utente {user_id}: {dati}")
     MOCK_DB[user_id] = dati
 
 # --- DEFINIZIONE DEI DATI ---
-# Le opzioni per la provincia di Catania
-ZONE_DISPONIBILI = {
-    "CT_CENTRO": "Catania Centro",
-    "CT_ACIREALE": "Acireale",
-    "CT_PATERNO": "Paternò",
-    "CT_MISTERBIANCO": "Misterbianco",
-    "CT_TUTTA": "Tutta la Provincia"
+QUARTIERI_CATANIA = {
+    "Q_BARRIERA": "Barriera", 
+    "Q_BICOCCA": "Bicocca", 
+    "Q_BORGO": "Borgo",
+    "Q_CANALICCHIO": "Canalicchio", 
+    "Q_CAPPUCCINI": "Cappuccini", 
+    "Q_CIBALI": "Cibali",
+    "Q_CIVITA": "Civita", 
+    "Q_CORSO_ITALIA": "Corso Italia", 
+    "Q_FORTINO": "Fortino",
+    "Q_LIBRINO": "Librino", 
+    "Q_MONTE_PO": "Monte Po'", 
+    "Q_NESIMA": "Nesima",
+    "Q_OGNINA": "Ognina", 
+    "Q_PIAZZA_DANTE": "Piazza Dante", 
+    "Q_PICANELLO": "Picanello",
+    "Q_PLAYA": "Playa", 
+    "Q_SAN_CRISTOFORO": "San Cristoforo", 
+    "Q_SAN_GIORGIO": "San Giorgio",
+    "Q_SAN_LEONE": "San Leone", 
+    "Q_SAN_NULLO": "San Nullo", 
+    "Q_VIA_UMBERTO": "Via Umberto",
+    "Q_AEROPORTO": "Zona Aeroporto", 
+    "Q_TUTTA_CT": "Tutta Catania Centro"
 }
 
-# I topic che mi hai indicato
-TOPIC_DISPONIBILI = {
-    "TOPIC_SPORT": "⚽ Sport",
-    "TOPIC_METEO": "☀️ Meteo",
-    "TOPIC_ANNUNCI": "📢 Annunci",
-    "TOPIC_CRONACA": "📰 Cronaca"
+COMUNI_PROVINCIA = {
+    "COM_ACI_BONACCORSI": "Aci Bonaccorsi", 
+    "COM_ACI_CASTELLO": "Aci Castello",
+    "COM_ACI_CATENA": "Aci Catena", 
+    "COM_ACI_SANT_ANTONIO": "Aci Sant'Antonio",
+    "COM_ACIREALE": "Acireale", 
+    "COM_ADRANO": "Adrano", 
+    "COM_BELPASSO": "Belpasso",
+    "COM_BIANCAVILLA": "Biancavilla", 
+    "COM_BRONTE": "Bronte", 
+    "COM_CALTAGIRONE": "Caltagirone",
+    "COM_CAMPOROTONDO": "Camporotondo Etneo", 
+    "COM_CASTEL_IUDICA": "Castel di Iudica",
+    "COM_CASTIGLIONE": "Castiglione di Sicilia", 
+    "COM_FIUMEFREDDO": "Fiumefreddo",
+    "COM_GIARRE": "Giarre", 
+    "COM_GRAMMICHELE": "Grammichele", 
+    "COM_GRAVINA": "Gravina di Catania",
+    "COM_LICODIA": "Licodia Eubea", 
+    "COM_LINGUAGLOSSA": "Linguaglossa", 
+    "COM_MALETTO": "Maletto",
+    "COM_MANIACE": "Maniace", 
+    "COM_MASCALI": "Mascali", 
+    "COM_MASCALUCIA": "Mascalucia",
+    "COM_MAZZARRONE": "Mazzarrone", 
+    "COM_MILO": "Milo", 
+    "COM_MINEO": "Mineo",
+    "COM_MIRABELLA": "Mirabella Imbaccari", 
+    "COM_MISTERBIANCO": "Misterbianco",
+    "COM_MOTTA": "Motta Sant'Anastasia", 
+    "COM_NICOLOSI": "Nicolosi", 
+    "COM_PALAGONIA": "Palagonia",
+    "COM_PATERNO": "Paternò", 
+    "COM_PEDARA": "Pedara", 
+    "COM_PIEDIMONTE": "Piedimonte Etneo",
+    "COM_RAGALNA": "Ragalna", 
+    "COM_RAMACCA": "Ramacca", 
+    "COM_RANDAZZO": "Randazzo",
+    "COM_RIPOSTO": "Riposto", 
+    "COM_SAN_CONO": "San Cono", 
+    "COM_SAN_GIOVANNI": "San Giovanni la Punta",
+    "COM_SAN_GREGORIO": "San Gregorio", 
+    "COM_SAN_MICHELE": "San Michele di Ganzaria",
+    "COM_SAN_PIETRO": "San Pietro Clarenza", 
+    "COM_SANT_AGATA": "Sant'Agata Li Battiati",
+    "COM_SANT_ALFIO": "Sant'Alfio", 
+    "COM_SANTA_MARIA": "Santa Maria di Licodia",
+    "COM_SANTA_VENERINA": "Santa Venerina", 
+    "COM_SCORDIA": "Scordia", 
+    "COM_TRECASTAGNI": "Trecastagni",
+    "COM_TREMESTIERI": "Tremestieri Etneo", 
+    "COM_VALVERDE": "Valverde", 
+    "COM_VIAGRANDE": "Viagrande",
+    "COM_VIZZINI": "Vizzini", 
+    "COM_ZAFFERANA": "Zafferana Etnea",
+    "COM_TUTTI": "Tutti i comuni"
 }
 
-# --- HANDLERS ---
+TOPIC_DISPONIBILI = {   
+    "TOPIC_DOSSIER": "Dossier",
+    "TOPIC_CRONACA": "Cronaca",
+    "TOPIC_POILITICA": "Politica",
+    "TOPIC_ATTUALITA": "Attualità",
+    "TOPIC_SPORT": "Sport",
+    "TOPIC_ECONOMIA" : "Economia e Lavoro",
+    "TOPIC_ANNUNCI": "Annunci Lavoro",
+    "TOPIC_METEO": "Meteo",
+    "TOPIC_AMBIENTE": "Ambiente",
+    "TOPIC_SALUTE": "Salute",
+    "TOPIC_CASA": "Casa",
+    "TOPIC_FORMAZIONE": "Formazione",
+    "TOPIC_MOTORI": "Motori",
+    "TOPIC_GUIDE": "Guide Catania",
+    "TOPIC_TUTTI": "Tutti i topics"
+}
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """
-    1. Risponde al comando /start
-    2. Mostra la scelta della zona (Città/Provincia)
-    """
-    user = update.effective_user
-    # Inizializziamo una memoria temporanea per questo utente, la condizione ci permette di modificare le scelte gia fatte 
-    if 'preferenze' not in context.user_data:
-        context.user_data['preferenze'] = { 
-            "zona": None,
-            "topics": []
-        }
-    
-    await update.message.reply_text(
-        f"Ciao {user.first_name}! Benvenuto nel Bot Notizie Catania.\n"
-        "Per iniziare, seleziona la tua zona di interesse:"
-    )
-    
-    # Creiamo i bottoni per le città
-    keyboard = [
-        [InlineKeyboardButton("🌋 Catania Città", callback_data="CT_CENTRO")],
-        [InlineKeyboardButton("🍋 Acireale", callback_data="CT_ACIREALE"), 
-         InlineKeyboardButton("🏰 Paternò", callback_data="CT_PATERNO")],
-        [InlineKeyboardButton("🏗️ Misterbianco", callback_data="CT_MISTERBIANCO")],
-        [InlineKeyboardButton("📍 Tutta la Provincia", callback_data="CT_TUTTA")]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await update.message.reply_text("Scegli una zona:", reply_markup=reply_markup)
-
-
-async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """
-    Gestisce tutti i click sui bottoni.
-    """
-    query = update.callback_query
-    await query.answer() # Conferma a Telegram che il click è stato ricevuto
-    
-    dati_click = query.data
-    user_data = context.user_data.get('preferenze', {"zona": None, "topics": []})
-
-    # --- FASE 1: GESTIONE SCELTA ZONA ---
-    if dati_click in ZONE_DISPONIBILI:
-        # Salviamo la zona scelta
-        user_data['zona'] = ZONE_DISPONIBILI[dati_click]
-        
-        #salviamo le modifiche nella memoria a breve termine del bot.
-        context.user_data['preferenze'] = user_data 
-        
-        # Ora mostriamo i topic da scegliere
-        await mostra_menu_topics(query, user_data['topics'])
-
-    # --- FASE 2: GESTIONE SCELTA TOPIC (CHECKBOX) ---
-    elif dati_click in TOPIC_DISPONIBILI:
-        topic_scelto = TOPIC_DISPONIBILI[dati_click]
-        
-        # Logica Toggle: Se c'è lo tolgo, se non c'è lo aggiungo
-        if topic_scelto in user_data['topics']:
-            user_data['topics'].remove(topic_scelto)
-        else:
-            user_data['topics'].append(topic_scelto)
-            
-        #salviamo le modifiche nella memoria a breve termine del bot.
-        context.user_data['preferenze'] = user_data 
-        
-        # Aggiorno la tastiera visivamente (senza mandare un nuovo messaggio)
-        await mostra_menu_topics(query, user_data['topics'])
-
-    # --- FASE 3: SALVATAGGIO FINALE ---
-    elif dati_click == "SALVA_TUTTO":
-        if not user_data['topics']:
-            await query.edit_message_text("⚠️ Devi selezionare almeno un argomento!")
-            return
-
-        # Qui chiami la funzione che parla col DB reale
-        salva_su_db(update.effective_user.id, user_data)
-        
-        messaggio_finale = (
-            f"✅ **Configurazione Completata!**\n\n"
-            f"📍 Zona: {user_data['zona']}\n"
-            f"news: {', '.join(user_data['topics'])}\n\n"
-            "Riceverai una notifica appena ci sono novità!"
-        )
-        await query.edit_message_text(text=messaggio_finale, parse_mode='Markdown')
-
-
-async def mostra_menu_topics(query, topics_selezionati):
-    """
-    Funzione ausiliaria che disegna i bottoni dei topic.
-    Mette una spunta ✅ se il topic è già nella lista dell'utente.
-    """
+# --- HELPER---
+def crea_tastiera_con_spunte(dizionario_dati, lista_selezionati, colonne = 3):
     keyboard = []
     riga = []
     
-    for key, label in TOPIC_DISPONIBILI.items():
-        # Se l'argomento è selezionato, aggiungi la spunta
-        if label in topics_selezionati:
-            text_button = f"✅ {label}"
-        else:
-            text_button = label
-            
-        #costruisce fisicamente un singolo bottone e lo posiziona sulla riga orizzontale che stai preparando.
-        riga.append(InlineKeyboardButton(text_button, callback_data=key))
+    for chiave, nome_chiaro in dizionario_dati.items():
+        is_selected = False
         
-        # Crea righe da 2 bottoni
-        if len(riga) == 2:
+        # Controllo doppio
+        if nome_chiaro in lista_selezionati: 
+            is_selected = True
+        elif f"Catania - {nome_chiaro}" in lista_selezionati:
+            is_selected = True
+            
+        testo = f"✅ {nome_chiaro}" if is_selected else nome_chiaro
+        
+        riga.append(InlineKeyboardButton(testo, callback_data=chiave))
+        
+        if len(riga) == colonne:
             keyboard.append(riga)
             riga = []
+            
+    if riga: keyboard.append(riga)
+    return keyboard
+
+def get_menu_home(zone_selezionate):
+    keyboard = [[InlineKeyboardButton("🌋 CATANIA CENTRO (Quartieri) 🏙️", callback_data="MENU_CATANIA")]]
+    keyboard.extend(crea_tastiera_con_spunte(COMUNI_PROVINCIA, zone_selezionate, colonne=3))
+    keyboard.append([InlineKeyboardButton("➡️ VAI AI TOPIC", callback_data="VAI_AI_TOPIC")])
     
-    if riga:
-        keyboard.append(riga)
+    return InlineKeyboardMarkup(keyboard)
+
+def get_menu_quartieri(zone_selezionate):
+    keyboard = crea_tastiera_con_spunte(QUARTIERI_CATANIA, zone_selezionate, colonne=2)
+    keyboard.append([InlineKeyboardButton("🔙 Indietro ai Comuni", callback_data="INDIETRO_COMUNI")])
+    keyboard.append([InlineKeyboardButton("➡️ VAI AI TOPIC", callback_data="VAI_AI_TOPIC")])
     
-    # Aggiungo il bottone CONFERMA in fondo
-    keyboard.append([InlineKeyboardButton("💾 SALVA PREFERENZE", callback_data="SALVA_TUTTO")])
+    return InlineKeyboardMarkup(keyboard)
+
+async def get_menu_topics(query, topics_selezionati, zone_selezionate):
+    keyboard = crea_tastiera_con_spunte(TOPIC_DISPONIBILI, topics_selezionati, colonne=2)
+    keyboard.append([InlineKeyboardButton("🔙 Indietro ai Comuni", callback_data="INDIETRO_COMUNI")])
+    keyboard.append([InlineKeyboardButton("💾 SALVA E CONCLUDI", callback_data="SALVA_TUTTO")])
     
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    # Modifichiamo il messaggio esistente invece di mandarne uno nuovo
+    # Creiamo un testo di riepilogo per far vedere cosa ha scelto finora
+    testo_zone = ", ".join(zone_selezionate)
+    if len(testo_zone) > 100: testo_zone = testo_zone[:100] + "..." # Taglia se troppo lungo
+
     await query.edit_message_text(
-        text=f"Ottimo! Hai scelto: **{query.message.reply_to_message}**.\nOra seleziona gli argomenti (puoi sceglierne più di uno):",
-        reply_markup=reply_markup,
-        #dice a Telegram: "Non stampare i simboli che ti mando così come sono, ma usali per dare STILE al testo."
+        text=f"📍 Zone attuali: `{testo_zone}`\n\nSeleziona gli argomenti:",
+        reply_markup=InlineKeyboardMarkup(keyboard),
         parse_mode='Markdown'
     )
 
-# --- SETUP PER AVVIARE IL BOT (da mettere nel main.py solitamente) ---
+def gestisci_selezione_massiva(lista_utente, dizionario_dati, chiave_tutti, prefisso=""):
+    tutti_i_valori = []
+    for k, v in dizionario_dati.items():
+        if k == chiave_tutti: continue
+
+        valore_db = f"{prefisso}{v}" if prefisso else v
+        tutti_i_valori.append(valore_db)
+
+    elementi_gia_presenti = [x for x in tutti_i_valori if x in lista_utente]
+    
+    if len(elementi_gia_presenti) == len(tutti_i_valori):
+        for item in tutti_i_valori:
+            if item in lista_utente:
+                lista_utente.remove(item)
+    else:
+        for item in tutti_i_valori:
+            if item not in lista_utente:
+                lista_utente.append(item)
+    
+    return lista_utente
+
+# --- HANDLERS---
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Inizializzo le liste vuote."""
+    user = update.effective_user
+    
+    if 'preferenze' not in context.user_data:
+        context.user_data['preferenze'] = {
+            "zone": [], 
+            "topics": []
+        }
+
+    # Recuperiamo le zone attuali
+    zone_attuali = context.user_data['preferenze']['zone']
+
+    await update.message.reply_text(
+        f"Ciao {user.first_name}! Benvenuto.\nSeleziona i Comuni di tuo interesse (puoi sceglierne più di uno):"
+    )
+
+    await update.message.reply_text(
+            "Seleziona i Comuni:", 
+            reply_markup = get_menu_home(zone_attuali)
+    )
+
+async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer() 
+    data = query.data
+    
+    user_data = context.user_data.get('preferenze', {"zone": [], "topics": []})
+
+    # --- CASO 1: APRE MENU QUARTIERI CATANIA ---
+    if data == "MENU_CATANIA":
+        await query.edit_message_text(
+            f"Seleziona i Quartieri di Catania:",
+            reply_markup = get_menu_quartieri(user_data['zone'])
+        )
+
+    # --- CASO 2: TORNA AI COMUNI ---
+    elif data == "INDIETRO_COMUNI":
+        await query.edit_message_text(
+            f"Seleziona i Comuni:", 
+            reply_markup = get_menu_home(user_data['zone'])
+        )
+
+    # --- CASO 3: CLICCA SU UN QUARTIERE (Q_) ---
+    elif data.startswith("Q_"):
+
+        if data == "Q_TUTTA_CT":
+            user_data['zone'] = gestisci_selezione_massiva(
+                user_data['zone'], 
+                QUARTIERI_CATANIA, 
+                "Q_TUTTA_CT", 
+                prefisso="Catania - "
+            )
+        else:
+            nome_zona = f"Catania - {QUARTIERI_CATANIA[data]}"
+            if nome_zona in user_data['zone']:
+                user_data['zone'].remove(nome_zona)
+            else:
+                user_data['zone'].append(nome_zona)
+                
+        context.user_data['preferenze'] = user_data 
+
+        await query.edit_message_text(
+            f"Seleziona i Quartieri di Catania:",
+            reply_markup = get_menu_quartieri(user_data['zone'])
+        )
+
+    # --- CASO 4: CLICCA SU UN COMUNE (COM_) ---
+    elif data.startswith("COM_"):
+        if data == "COM_TUTTI":
+             user_data['zone'] = gestisci_selezione_massiva(
+                user_data['zone'], 
+                COMUNI_PROVINCIA, 
+                "COM_TUTTI"
+            )
+        else:
+            nome_zona = COMUNI_PROVINCIA[data]
+            if nome_zona in user_data['zone']:
+                user_data['zone'].remove(nome_zona)
+            else:
+                user_data['zone'].append(nome_zona)
+            
+        context.user_data['preferenze'] = user_data 
+        await query.edit_message_text(
+            f"Seleziona i Comuni:", 
+            reply_markup =  get_menu_home(user_data['zone'])
+        )
+
+    # --- CASO 5: VAI AGLI ARGOMENTI (TOPICS) ---
+    elif data == "VAI_AI_TOPIC":
+        if not user_data['zone']:
+            await query.answer("⚠️ Seleziona almeno una zona prima di proseguire!", show_alert=True)
+            return
+         
+        await get_menu_topics(query, user_data['topics'], user_data['zone'])
+
+    # --- CASO 6: CLICCA SU UN TOPIC ---
+    elif data in TOPIC_DISPONIBILI:
+        if data == "TOPIC_TUTTI":
+             user_data['topics'] = gestisci_selezione_massiva(
+                user_data['topics'], 
+                TOPIC_DISPONIBILI, 
+                "TOPIC_TUTTI"
+            )
+        else:
+            topic = TOPIC_DISPONIBILI[data]
+            if topic in user_data['topics']:
+                user_data['topics'].remove(topic)
+            else:
+                user_data['topics'].append(topic)
+        
+        context.user_data['preferenze'] = user_data # Salva
+        await get_menu_topics(query, user_data['topics'], user_data['zone'])
+
+    # --- CASO 7: SALVA TUTTO ---
+    elif data == "SALVA_TUTTO":
+        if not user_data['topics']:
+            await query.answer("⚠️ Seleziona almeno un argomento!", show_alert=True)
+            return
+
+        salva_su_db(update.effective_user.id, user_data)
+
+        messaggio = (
+            f"✅ **Configurazione Salvata!**\n\n"
+            f"📍 **Zone:**\n"
+            f"{', '.join(user_data['zone'])}\n\n"
+            f"🗞️ **News:**\n"
+            f"{', '.join(user_data['topics'])}\n\n"
+            "Riceverai una notifica appena ci sono novità!"
+        )
+        await query.edit_message_text(messaggio, parse_mode='Markdown')
+
+# --- SETUP PER AVVIARE IL BOT (da mettere nel main.py) ---
 if __name__ == '__main__':
     # Inserisci qui il tuo TOKEN preso da BotFather
     TOKEN = "7651978991:AAExi67J3Ettz40xvzi0RDpcpmaYj1kgW_o"
     
     app = ApplicationBuilder().token(TOKEN).build()
-    
-    # Colleghiamo gli handler
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(button_handler))
-    
     print("Bot in avvio...")
     app.run_polling()
