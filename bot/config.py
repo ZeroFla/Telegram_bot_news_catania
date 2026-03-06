@@ -1,3 +1,9 @@
+import os
+from dotenv import load_dotenv
+
+# Apri il file .env e leggi 
+load_dotenv()
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 
 # --- DEFINIZIONE DEI DATI ---
 QUARTIERI_CATANIA = {
