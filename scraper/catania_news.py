@@ -1,7 +1,11 @@
+import sys, os
 import feedparser
 import requests
 from bs4 import BeautifulSoup
 import re
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from bot.config import QUARTIERI_CATANIA, COMUNI_PROVINCIA
+tutti_i_luoghi = list(QUARTIERI_CATANIA.values()) + list(COMUNI_PROVINCIA.values())
 
 RSS_URL = "https://www.cataniatoday.it/rss"
 
@@ -18,8 +22,6 @@ def analizza_html(url_notizia):
         link_loc = soup.find('a', href=re.compile(r'^/notizie/[a-z-]+/$'))
         if link_loc:
             localita_trovata = link_loc.get_text().replace("/", "").strip().title()
-        if localita_trovata == "Ultime Notizie":
-            localita_trovata = "Catania"
             
     except Exception as e:
         print(f"⚠️ Errore: {e}")
@@ -30,9 +32,13 @@ def ricerca_notizia():
     feed = feedparser.parse(RSS_URL)
     news_list=[]
 
-    for entry in feed.entries[:5]:
+    for entry in feed.entries[:30]:
         localita = analizza_html(entry.link)
-        
+        # Confronto "Case Insensitive"
+        if localita == "Ultime Notizie":
+            trovati = next((v for v in tutti_i_luoghi if v.lower() in str(entry.title).lower()), "Catania")
+            localita = trovati
+
         articolo = {
             "titolo": entry.title,
             "link": entry.link,
@@ -45,14 +51,3 @@ def ricerca_notizia():
 
     return news_list
 
-if __name__ == "__main__":
-    notizie = ricerca_notizia()
-    print("\n" + "="*50)
-    for n in notizie:
-        print(f"📍 LUOGO:   {n['luogo']}")
-        print(f"📰 TITOLO:  {n['titolo']}")
-        print(f"   Topic: {n['topic']}")
-        print(f"   Link: {n['link']}")
-        print(f"   Immagine: {n['immagine']}")
-        print(f"   Riassunto: {n['riassunto']}")
-        print("-" * 20)

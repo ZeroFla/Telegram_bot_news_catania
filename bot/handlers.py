@@ -2,8 +2,8 @@ import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
-from config import QUARTIERI_CATANIA, COMUNI_PROVINCIA, TOPIC_DISPONIBILI
-from database.database import salva_preferenze
+from bot.config import QUARTIERI_CATANIA, COMUNI_PROVINCIA, TOPIC_DISPONIBILI
+from bot.database.database import salva_preferenze, check_user
 
 # Configurazione base del logging per tracciare lo stato di esecuzione e gli errori a terminale
 logging.basicConfig(
@@ -121,7 +121,17 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "zone": [], 
             "topics": []
         }
-    
+        
+        data_db = check_user(user.id)
+
+        if data_db:
+            # NOTA: Ora data_db è già una tupla di due LISTE (zone, topics)
+            # Non servono più i cicli for o c[0]!
+            zone_salvate, topics_salvati = data_db
+            
+            context.user_data['preferenze']['zone'] = zone_salvate
+            context.user_data['preferenze']['topics'] = topics_salvati
+
     zone_attuali = context.user_data['preferenze']['zone']
 
     await update.message.reply_text(
