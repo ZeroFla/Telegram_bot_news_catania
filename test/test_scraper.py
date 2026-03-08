@@ -5,33 +5,27 @@ import feedparser
 from scraper.catania_news import analizza_html, ricerca_notizia
 
 # Parametrizzo i possibili html da analizzare
+@pytest.mark.parametrize("html_possibili, status_finto, localita_risultati",[
+    ('<a class="u-nav-03 o-link-inverse" href="/notizie/tutte/" rel="nofollow">Roma</a>', 200, 'Roma'),
+    ('<html><body>Niente link qui</body></html>', 200, None),
+    ('Errore', 404, None),
+])
 
-@pytest.mark.parametrize("html_possibili,localita_risultati",[
-    ('<a class="u-nav-03 o-link-inverse" href="/notizie/tutte/" rel="nofollow">Roma</a>','Roma'),
-    ('<a class="u-nav-03 o-link-inverse" href="/notizie/tutte/" rel="nofollow">Ultime Notizie</a>', 'Ultime Notizie'),
-    ('<a class="u-nav-03 o-link-inverse" href="/notizie/tutte/" rel="nofollow">Ultime Notizie</a>', 'Ultime Notizie')
-    ])
-
-def test_analizza_html_successo(monkeypatch,html_possibili,localita_risultati):
-    html_finto = html_possibili
-    # Creo un mock con valori fittizzi
+def test_analizza_html_successo(monkeypatch, html_possibili, status_finto, localita_risultati):
     mock = Mock()
-    mock.status_code = 200
-    mock.text = html_finto
+    mock.status_code = status_finto
+    mock.text = html_possibili
 
     monkeypatch.setattr("requests.get", lambda *args, **kwargs: mock)
-
     risultato = analizza_html("https://link-finto.com")
-
     assert risultato == localita_risultati
 
 def test_analizza_html_eccezione(monkeypatch):
-    # Testo l'exception 
+    # Testo l'exeption
     mock_crash = Mock()
     mock_crash.side_effect = requests.exceptions.ConnectionError("Errore di rete simulato")
-    
-    monkeypatch.setattr("requests.get", lambda *args, **kwargs: mock_crash) 
 
+    monkeypatch.setattr("requests.get", mock_crash)
     risultato = analizza_html("https://link-finto.com")
 
     assert risultato is None
