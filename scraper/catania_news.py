@@ -28,11 +28,11 @@ def analizza_html(url_notizia):
 
     return localita_trovata
 # --- RECUPERO LE NOTIZIE ---
-def ricerca_notizia():
+def ricerca_notizia(notizie = 10):
     feed = feedparser.parse(RSS_URL)
     news_list=[]
 
-    for entry in feed.entries[:30]:
+    for entry in feed.entries[:notizie]:
         localita = analizza_html(entry.link)
         # --- VERIFICO IL NOME CORRETTO DELLA LOCALITÀ ---
         if localita == "Ultime Notizie":
@@ -50,4 +50,3 @@ def ricerca_notizia():
         news_list.append(articolo)
 
     return news_list
-
