@@ -27,14 +27,14 @@ def analizza_html(url_notizia):
         print(f"⚠️ Errore: {e}")
 
     return localita_trovata
-
+# --- RECUPERO LE NOTIZIE ---
 def ricerca_notizia():
     feed = feedparser.parse(RSS_URL)
     news_list=[]
 
     for entry in feed.entries[:30]:
         localita = analizza_html(entry.link)
-        # Confronto "Case Insensitive"
+        # --- VERIFICO IL NOME CORRETTO DELLA LOCALITÀ ---
         if localita == "Ultime Notizie":
             trovati = next((v for v in tutti_i_luoghi if v.lower() in str(entry.title).lower()), "Catania")
             localita = trovati

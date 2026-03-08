@@ -125,8 +125,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         data_db = check_user(user.id)
 
         if data_db:
-            # NOTA: Ora data_db è già una tupla di due LISTE (zone, topics)
-            # Non servono più i cicli for o c[0]!
             zone_salvate, topics_salvati = data_db
             
             context.user_data['preferenze']['zone'] = zone_salvate

@@ -2,9 +2,8 @@ import sqlite3
 import os
 from datetime import datetime
 
-# Gestione del percorso assoluto per non perdere il DB tra le cartelle
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, 'users.db')
+DB_PATH = os.path.join(BASE_DIR, 'bot.db')
 
 def execute_query(query, params=()):
     with sqlite3.connect(DB_PATH) as conn:
@@ -22,7 +21,7 @@ def init_db():
             topics TEXT,
             comuni TEXT
         )''')
-    # Tabella News (aggiunto time_stamp nell'INSERT)
+    # Tabella News
     execute_query('''
         CREATE TABLE IF NOT EXISTS news_inviate (
             id_news TEXT PRIMARY KEY,
@@ -31,15 +30,15 @@ def init_db():
     print("Inizializzazione DB completata")
 
 def salva_preferenze(user_id, username, topics, comuni):
-    """Aggiorna o inserisce le preferenze dell'utente"""
+    # Aggiorna o inserisce le preferenze dell'utente
     query = "INSERT OR REPLACE INTO utenti (id_telegram, username, topics, comuni) VALUES (?, ?, ?, ?)"
     execute_query(query, (user_id, username, topics, comuni))
     print(f"Preferenze aggiornate per {username}")
 
 def check_news(id_news):
-    """Controlla se la news è già stata inviata, se no la aggiunge con l'ora attuale"""
+    # Controlla se la news è già stata inviata, se no la aggiunge con l'ora attuale
     query = "SELECT 1 FROM news_inviate WHERE id_news = ?"
-    # NOTA: (id_news,) con la virgola è fondamentale!
+    
     if execute_query(query, (id_news,)):
         return True
     
@@ -49,10 +48,22 @@ def check_news(id_news):
     return False
 
 def clean_db():
-    """Elimina notizie più vecchie di 7 giorni"""
+    # Elimina notizie più vecchie di 7 giorni
     query = "DELETE FROM news_inviate WHERE time_stamp < datetime('now', '-7 days')"
     execute_query(query)
     print("Pulizia database effettuata")
 
-if __name__ == "__main__":
-    init_db()
+def check_user(id_telegram):
+    # Verifica che un'utente sia già registrato nel DB
+    risultato = execute_query("SELECT comuni,topics FROM utenti WHERE id_telegram = ?", (id_telegram,))
+        
+    if risultato:
+        comuni_str, topics_str = risultato[0]
+    
+        # Trasformo le stringhe in liste eliminando spazi extra
+        lista_comuni = [c.strip() for c in comuni_str.split(",")] if comuni_str else []
+        lista_topics = [t.strip() for t in topics_str.split(",")] if topics_str else []
+
+        return lista_comuni, lista_topics
+
+    return False
