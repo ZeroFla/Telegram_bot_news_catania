@@ -35,6 +35,12 @@ def salva_preferenze(user_id, username, topics, comuni):
     execute_query(query, (user_id, username, topics, comuni))
     print(f"Preferenze aggiornate per {username}")
 
+def cancella_preferenze(user_id):
+    #Rimuove l'utente e le sue preferenze dal database.
+    query = "DELETE FROM utenti WHERE id_telegram = ?"
+    execute_query(query, (user_id,))
+    print(f"Preferenze cancellate per {user_id}")
+
 def check_news(id_news):
     # Controlla se la news è già stata inviata, se no la aggiunge con l'ora attuale
     query = "SELECT 1 FROM news_inviate WHERE id_news = ?"

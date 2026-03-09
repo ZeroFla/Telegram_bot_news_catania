@@ -1,6 +1,6 @@
 import logging
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler
-from bot.handlers import start, button_handler 
+from bot.handlers import start, button_handler, cancel
 from bot.database.database import init_db, execute_query, check_news, clean_db
 from scraper.catania_news import ricerca_notizia
 import os
@@ -38,6 +38,7 @@ if __name__ == '__main__':
     app = ApplicationBuilder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("cancel", cancel))
     app.add_handler(CallbackQueryHandler(button_handler))
 
     # --- TIMER PER L'INVIO DEI MESSAGGI ---
