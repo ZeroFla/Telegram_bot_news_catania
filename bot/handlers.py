@@ -3,7 +3,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
 from bot.config import QUARTIERI_CATANIA, COMUNI_PROVINCIA, TOPIC_DISPONIBILI
-from bot.database.database import salva_preferenze, check_user
+from bot.database.database import salva_preferenze, check_user, cancella_preferenze
 
 # Configurazione base del logging per tracciare lo stato di esecuzione e gli errori a terminale
 logging.basicConfig(
@@ -122,6 +122,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "topics": []
         }
         
+        # Controlla se l'utente è gia presente nel Database
         data_db = check_user(user.id)
 
         if data_db:
@@ -135,6 +136,28 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         f"Ciao {user.first_name}! Benvenuto.\nSeleziona i Comuni di tuo interesse (puoi sceglierne più di uno):", reply_markup = get_menu_home(zone_attuali)
     )
+
+async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    Gestisce il reset tramite comando testuale /cancel.
+    Elimina le preferenze dell'utente dal DB e reinizializza lo stato di sessione.
+    """
+    user = update.effective_user
+
+    # Elimina i dati permaneti dal Database
+    cancella_preferenze(user.id)
+
+    # Svuota e reinizializza la memoria temporanea
+    context.user_data['preferenze']= {
+        "zone" : [], 
+        "topics" : []
+    }
+        
+    await update.message.reply_text(
+       "🗑️ Tutte le tue preferenze sono state cancellate con successo!\n\n"
+        "Se desideri ricominciare la configurazione, clicca su /start."
+    )
+
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
