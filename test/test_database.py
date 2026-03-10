@@ -1,5 +1,4 @@
 import pytest
-import sqlite3
 import bot.database.database
 from datetime import datetime, timedelta
 import os
