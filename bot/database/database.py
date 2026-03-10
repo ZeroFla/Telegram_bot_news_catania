@@ -36,7 +36,7 @@ def salva_preferenze(user_id, username, topics, comuni):
     print(f"Preferenze aggiornate per {username}")
 
 def cancella_utente(user_id):
-    #Rimuove l'utente e le sue preferenze dal database.
+    #Rimuove l'utente dal DB
     query = "DELETE FROM utenti WHERE id_telegram = ?"
     execute_query(query, (user_id,))
     print(f"Untente: {user_id}, cancellato con successo")
