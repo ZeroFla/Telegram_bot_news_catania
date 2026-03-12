@@ -17,7 +17,7 @@ async def monitor_news_job(context):
     print("🔎 Controllo news...")
     ultime_news = ricerca_notizia()
     nuove_da_inviare = [n for n in ultime_news if not check_news(n['link'])]
-    # PULIZIA AUTOMATICA DEL DB PER NON SPRECARE MEMORI
+    # PULIZIA AUTOMATICA DEL DB PER NON SPRECARE MEMORIA
     clean_db()
     if nuove_da_inviare:
         utenti = execute_query("SELECT id_telegram, topics, comuni FROM utenti")

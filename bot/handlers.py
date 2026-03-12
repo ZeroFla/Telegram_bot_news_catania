@@ -1,6 +1,7 @@
 import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
+from telegram.error import BadRequest
 
 from bot.config import QUARTIERI_CATANIA, COMUNI_PROVINCIA, TOPIC_DISPONIBILI
 from bot.database.database import salva_preferenze, check_user, cancella_utente
