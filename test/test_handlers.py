@@ -34,7 +34,7 @@ CASI_DI_TEST_TASTIERA = [
         ]
     ), 
 
-     #CASO 4: logica speciale con prefisso "Catania -"
+     #CASO 4: logica con prefisso "Catania -"
       (
         {"Q_UNO": "Centro", "Q_DUE": "Periferia"}, 
         ["Catania - Centro"],
@@ -45,7 +45,7 @@ CASI_DI_TEST_TASTIERA = [
         ]
     ),  
 
-    # Caso 5: Paginazione con 5 elementi impaginati a 2 colonne creano 3 righe
+    # Caso 5: paginazione con 5 elementi impaginati a 2 colonne creano 3 righe
     (
         {"1": "A", "2": "B", "3": "C", "4": "D", "5": "E"}, 
         [], 
@@ -57,7 +57,7 @@ CASI_DI_TEST_TASTIERA = [
         ]
     ),
 
-    # CASO 6: Selezione multipla 
+    # CASO 6: selezione multipla 
     (
         {"Q_UNO": "Centro", "Q_DUE": "Borgo", "Q_TRE": "Librino"}, 
         ["Catania - Centro", "Librino"], 
@@ -73,13 +73,13 @@ CASI_DI_TEST_TASTIERA = [
 @pytest.mark.parametrize("dizionario_dati, lista_selezionati, colonne, risultato_atteso", CASI_DI_TEST_TASTIERA)
 def test_crea_tastiera_con_spunte(dizionario_dati, lista_selezionati, colonne, risultato_atteso):
     """
-    Test parametrizzato che verifica la corretta generazione della tastiera, 
+    Test per verificare la corretta generazione della tastiera, 
     l'assegnazione delle spunte e l'impaginazione dinamica in base alle colonne.
     """
     tastiera_generata = crea_tastiera_con_spunte(dizionario_dati, lista_selezionati, colonne)
     assert tastiera_generata == risultato_atteso
 
-# Mock di un sottomenù reale 
+# Mock di un sottomenù 
 DIZ_TOPIC_MOCK = {   
     "TOPIC_CRONACA": "Cronaca",
     "TOPIC_SPORT": "Sport",
@@ -88,24 +88,24 @@ DIZ_TOPIC_MOCK = {
 CHIAVE_TUTTI = "TOPIC_TUTTI"
 
 CASI_DI_TEST_SELEZIONE = [
-    # Toggle singolo elemento
+    # Attivazione o disattivazione singolo elemento
     ([], "TOPIC_CRONACA", "", ["Cronaca"]),
     (["Cronaca", "Sport"], "TOPIC_CRONACA", "", ["Sport"]),
     
-    # Toggle singolo elemento CON prefisso (es. "Provincia -")
+    # Attivazione o disattivazione singolo elemento CON prefisso (es. "Provincia -")
     ([], "TOPIC_SPORT", "Provincia: ", ["Provincia: Sport"]),
     (["Provincia: Cronaca", "Provincia: Sport"], "TOPIC_SPORT", "Provincia: ", ["Provincia: Cronaca"]),
     
-    # Toggle "Seleziona/Deseleziona Tutti"
+    # Seleziona/Deseleziona Tutti
     ([], "TOPIC_TUTTI", "", ["Cronaca", "Sport"]),
     (["Cronaca"], "TOPIC_TUTTI", "", ["Cronaca", "Sport"]),
     (["Cronaca", "Sport"], "TOPIC_TUTTI", "", []),
     
-    # Toggle "Tutti" CON prefisso
+    # Attivazione o disattivazione "Tutti" CON prefisso
     ([], "TOPIC_TUTTI", "Catania - ", ["Catania - Cronaca", "Catania - Sport"]),
     (["Catania - Cronaca", "Catania - Sport"], "TOPIC_TUTTI", "Catania - ", []),
 
-    # L'utente ha già selezionato "Meteo" da altrove. Aggiunge "Sport". "Meteo" deve restare.
+    # L'utente ha già selezionato "Meteo", aggiunge "Sport" ma "Meteo" deve restare.
     (["Meteo"], "TOPIC_SPORT", "", ["Meteo", "Sport"]),
     
     # L'utente ha "Meteo", "Cronaca" e "Sport". Clicca "Deseleziona Tutti i Topic".
@@ -116,8 +116,8 @@ CASI_DI_TEST_SELEZIONE = [
 @pytest.mark.parametrize("lista_iniziale, data_key, prefisso, risultato_atteso", CASI_DI_TEST_SELEZIONE)
 def test_aggiorna_selezione(lista_iniziale, data_key, prefisso, risultato_atteso):
     """
-    Test parametrizzato per verificare la logica di aggiunta/rimozione singola
-    e la selezione/deselezione cumulativa ("Tutti").
+    Test per verificare la logica di aggiunta/rimozione singola
+    e la selezione/deselezione cumulativa.
     """
     lista_target = lista_iniziale.copy()
 
@@ -155,16 +155,16 @@ async def test_start_utente_non_in_db(mocker):
     # esecuzione della funzione passandogli i finti update e context
     await start(update, context)
 
-    # test 1: Ha creato la struttura dati vuota correttamente?
+    # test 1: verifica della creazione della struttura dati vuota 
     assert context.user_data['preferenze'] == {"zone": [], "topics": []}
 
-    # test 2: Ha controllato nel DB l'ID giusto?
+    # test 2: controllato dell'ID corretto nel DB
     mock_db.assert_called_once_with(12345) 
 
-    # test 3: Ha generato il menu passandogli le zone attuali?
+    # test 3: controllo della generazione del menu passandogli le zone attuali
     mock_menu.assert_called_once_with([])
     
-    # test 4: Ha inviato il messaggio di benvenuto corretto all'utente?
+    # test 4: verifica del invio del messaggio di benvenuto all'utente
     update.message.reply_text.assert_called_once_with(
         "Ciao Mario! Benvenuto.\nSeleziona i Comuni di tuo interesse (puoi sceglierne più di uno):",
         reply_markup="FINTO_MENU"
@@ -191,10 +191,10 @@ async def test_start_utente_gia_registrato(mocker):
     
     await start(update, context)
     
-    # test 1: Ha caricato i dati dal DB nel context.user_data dell'utente?
+    # test 1: controllo del caricamento dei dati dal DB nel context.user_data dell'utente
     assert context.user_data['preferenze'] == {"zone": ["Catania"], "topics": ["Sport", "Cronaca"]}
     
-    # test 2: Ha generato il menu passandogli la zona recuperata dal DB?
+    # test 2: controllo della creazione del menu passandogli la zona recuperata dal DB
     mock_menu.assert_called_once_with(["Catania"])
 
 @pytest.mark.asyncio
@@ -213,7 +213,7 @@ async def test_start_utente_con_sessione_attiva(mocker):
     update.effective_user.first_name = "Giulia"
     update.message.reply_text = AsyncMock()
     
-    # Prepariamo un context che HA GIÀ le preferenze salvate
+    # Prepariamo un context che ha già le preferenze salvate
     context = MagicMock()
     context.user_data = {
         'preferenze': {
@@ -224,7 +224,7 @@ async def test_start_utente_con_sessione_attiva(mocker):
 
     await start(update, context)
     
-    # test 1: Il database NON deve essere stato chiamato
+    # test 1: Il database non deve essere stato chiamato
     mock_db.assert_not_called()
     
     # test 2. Il menu deve essere stato generato con le zone già in memoria 
@@ -232,7 +232,7 @@ async def test_start_utente_con_sessione_attiva(mocker):
 
 @pytest.mark.asyncio
 async def test_cancel(mocker): 
-    # mock dela funzione del database che elimina l'utente.
+    # mock dela funzione del database che elimina l'utente
     mock_db_cancella = mocker.patch("bot.handlers.cancella_utente")
     
     # finto "update" simulando un utente
@@ -251,20 +251,19 @@ async def test_cancel(mocker):
     
     await cancel(update, context)
     
-    # test 1: Ha chiamato la funzione del DB passandogli l'ID giusto?
+    # test 1: controllo della chiamata alla funzione del DB passandogli l'ID giusto
     mock_db_cancella.assert_called_once_with(12345)
     
-    # test 2: Ha svuotato correttamente le liste nel context?
+    # test 2: verifica che la lista si stata svuotata nel context
     assert context.user_data['preferenze'] == {"zone": [], "topics": []}
     
-    # test 3: Ha inviato il messaggio corretto all'utente?
+    # test 3: controllo nel invio del messaggio all'utente
     update.message.reply_text.assert_called_once_with(
         "🗑️ Il tuo account è stato eliminato con successo!\n\n"
         "Se desideri ricominciare la configurazione, clicca su /start."
     )
 
-# TEST DEL BUTTON_HANDLER (Il Cuore del Bot)
-
+# TEST DEL BUTTON_HANDLER 
 
 @pytest.mark.asyncio
 async def test_button_handler_errore_nessuna_zona(mocker):
@@ -331,7 +330,7 @@ async def test_button_handler_click_singolo_comune(mocker):
     update = MagicMock()
     query = AsyncMock()
     update.callback_query = query
-    query.data = "COM_ACIREALE" # Inizia per COM_
+    query.data = "COM_ACIREALE"
     
     context = MagicMock()
     # zone e topic vuoti
@@ -339,13 +338,13 @@ async def test_button_handler_click_singolo_comune(mocker):
     
     await button_handler(update, context)
     
-    # test 1: Ha usato la funzione aggiorna_selezione per calcolare le nuove liste?
+    # test 1: controllo del utilizzo della funzione aggiorna_selezione per calcolare le nuove liste
     mock_aggiorna.assert_called_once()
     
-    # test 2: Ha aggiornato correttamente la RAM dell'utente con la nuova lista che ha ricevuto?
+    # test 2: verifica l'aggiornato della nuova lista di preferenze dell'utente 
     assert context.user_data['preferenze']['zone'] == ["Acireale"]
     
-    # test 3: Ha ricaricato l'interfaccia passandogli la nuova lista?
+    # test 3: controllo dell'interfaccia con la nuova lista di preferenze selezionate
     query.edit_message_text.assert_called_once_with(
         "Seleziona i Comuni:", 
         reply_markup="TASTIERA_HOME"
@@ -381,7 +380,7 @@ async def test_button_handler_salvataggio_finale(mocker):
     
     await button_handler(update, context)
     
-    # test 1: Ha trasformato le liste in stringhe separate da virgole e salvato sul DB?
+    # test 1: veriica della trasformazione delle liste in stringhe separate da virgole e del salvataggio sul DB
     mock_salva_db.assert_called_once_with(
         999, 
         "Anna", 
@@ -389,7 +388,7 @@ async def test_button_handler_salvataggio_finale(mocker):
         "Acireale, Catania - Borgo"
     )
     
-    # test 2: Ha mandato il messaggio finale modificando il testo?
+    # test 2: verifica del invio del messaggio finale con il testo modificato
     mock_edit = query.edit_message_text
     mock_edit.assert_called_once()
     args, kwargs = mock_edit.call_args
