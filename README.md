@@ -8,7 +8,7 @@ Un bot Telegram interattivo per ricevere aggiornamenti e notizie personalizzate 
 Questo progetto nasce per offrire un servizio di news. L'utente può navigare in un menù a bottoni, selezionare una o più zone di interesse e scegliere quali argomenti seguire. I dati e le preferenze vengono salvati in un database per l'invio automatico delle notizie pertinenti.
 
 **Esempio notifica:**
-![Notifica](attets/Notifica.png)
+![Notifica](assets/Notifica.png)
 
 ---
 
@@ -16,14 +16,14 @@ Questo progetto nasce per offrire un servizio di news. L'utente può navigare in
 * **Selezione Geografica Multipla:** Scelta tra i comuni della provincia e i quartieri di Catania centro.
 
 **Menù Comuni**
-![Comuni](attets/Comuni.png)
+![Comuni](assets/Comuni.png)
 **Menù Quartieri**
-![Quartieri](attets/Quartieri.png)
+![Quartieri](assets/Quartieri.png)
 
 * **Filtro per Topic:** Selezione degli argomenti di interesse (es. Cronaca, Sport).
 
 **Menù Topics**
-![Topics](attets/Topics.png)
+![Topics](assets/Topics.png)
 
 ---
 
