@@ -27,4 +27,4 @@ jobs:
     - name: Run Pytest
       run: |
         # Esegue tutti i test nella cartella test/
-        python -m pytest test/ -v
+        pytest tests/ --cov=. --cov-fail-under=75
