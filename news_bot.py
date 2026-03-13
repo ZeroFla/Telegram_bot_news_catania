@@ -31,7 +31,8 @@ async def monitor_news_job(context):
                         print(f"Errore invio: {e}")
 
 # --- AVVIO ---
-if __name__ == '__main__':
+if __name__ == '__main__': #pragma: no cover
+    # Salto questa parte di codice in fase di test perchè non c'è effettiva logia, ma solo chiamate a funzioni
     init_db()
    
 
