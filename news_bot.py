@@ -44,7 +44,7 @@ if __name__ == '__main__': #pragma: no cover
     # Salto questa parte di codice in fase di test perchè non c'è effettiva logia, ma solo chiamate a funzioni
     init_db()
 
-    app = ApplicationBuilder().token(TOKEN).build()
+    app = ApplicationBuilder().token(TOKEN).build() #type: ignore[arg-type]
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("cancel", cancel))
