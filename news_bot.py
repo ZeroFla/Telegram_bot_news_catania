@@ -13,8 +13,6 @@ logging.basicConfig(level=logging.INFO)
 # Carico il TOKEN da .env
 load_dotenv()
 TOKEN = os.getenv("TELEGRAM_TOKEN")
-if TOKEN is None:
-    raise ValueError("No TELEGRAM_TOKEN found in environment variables")
 
 
 # --- LOGICA DEL MONITORAGGIO ---
