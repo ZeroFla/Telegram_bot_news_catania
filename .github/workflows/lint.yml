@@ -23,8 +23,11 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Lint with pylint
-      run: pylint --fail-under=8.0 $(git ls-files '*.py')
+    - name: Check code formatting with isort
+      run: isort --check-only --profile black --line-length 127 .
+
+    - name: Check code formatting with black
+      run: black --check --diff --line-length 127 .
 
     - name: Lint with flake8
       run: |
@@ -32,12 +35,9 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude=.venv
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics --exclude=.venv
+    
+    - name: Lint with pylint
+      run: pylint --fail-under=8.0 $(git ls-files '*.py')
 
     - name: Lint with mypy
       run: mypy $(git ls-files '*.py') --ignore-missing-imports
-
-    - name: Check code formatting with isort
-      run: isort --check-only --diff $(git ls-files '*.py')
-
-    - name: Check code formatting with black
-      run: isort --check-only --diff $(git ls-files '*.py')

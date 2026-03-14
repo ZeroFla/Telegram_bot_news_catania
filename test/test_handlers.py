@@ -74,12 +74,8 @@ CASI_DI_TEST_TASTIERA = [
     "dizionario_dati, lista_selezionati, colonne, risultato_atteso",
     CASI_DI_TEST_TASTIERA,
 )
-def test_crea_tastiera_con_spunte(
-    dizionario_dati, lista_selezionati, colonne, risultato_atteso
-):
-    tastiera_generata = crea_tastiera_con_spunte(
-        dizionario_dati, lista_selezionati, colonne
-    )
+def test_crea_tastiera_con_spunte(dizionario_dati, lista_selezionati, colonne, risultato_atteso):
+    tastiera_generata = crea_tastiera_con_spunte(dizionario_dati, lista_selezionati, colonne)
     assert tastiera_generata == risultato_atteso
 
 
@@ -99,14 +95,10 @@ CASI_DI_TEST_SELEZIONE = [
 ]
 
 
-@pytest.mark.parametrize(
-    "lista_iniziale, data_key, prefisso, risultato_atteso", CASI_DI_TEST_SELEZIONE
-)
+@pytest.mark.parametrize("lista_iniziale, data_key, prefisso, risultato_atteso", CASI_DI_TEST_SELEZIONE)
 def test_aggiorna_selezione(lista_iniziale, data_key, prefisso, risultato_atteso):
     lista_target = lista_iniziale.copy()
-    risultato = aggiorna_selezione(
-        lista_target, data_key, DIZ_TOPIC_MOCK, CHIAVE_TUTTI, prefisso
-    )
+    risultato = aggiorna_selezione(lista_target, data_key, DIZ_TOPIC_MOCK, CHIAVE_TUTTI, prefisso)
     assert risultato == risultato_atteso
 
 
@@ -162,9 +154,7 @@ async def test_button_handler_errore_nessuna_zona(mocker):
 
     await button_handler(update, context)
 
-    query.answer.assert_called_once_with(
-        "⚠️ Seleziona almeno una zona!", show_alert=True
-    )
+    query.answer.assert_called_once_with("⚠️ Seleziona almeno una zona!", show_alert=True)
 
 
 @pytest.mark.asyncio
@@ -182,9 +172,7 @@ async def test_button_handler_navigazione_quartieri(mocker):
 
     await button_handler(update, context)
 
-    query.edit_message_text.assert_called_once_with(
-        "Seleziona i Quartieri di Catania:", reply_markup="TASTIERA_QUARTIERI"
-    )
+    query.edit_message_text.assert_called_once_with("Seleziona i Quartieri di Catania:", reply_markup="TASTIERA_QUARTIERI")
 
 
 @pytest.mark.asyncio

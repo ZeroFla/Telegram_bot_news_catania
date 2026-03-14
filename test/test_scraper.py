@@ -20,9 +20,7 @@ from scraper.catania_news import analizza_html, ricerca_notizia
         ("Errore", 404, None),
     ],
 )
-def test_analizza_html_successo(
-    monkeypatch, html_possibili, status_finto, localita_risultati
-):
+def test_analizza_html_successo(monkeypatch, html_possibili, status_finto, localita_risultati):
     mock = Mock()
     mock.status_code = status_finto
     mock.text = html_possibili
@@ -35,9 +33,7 @@ def test_analizza_html_successo(
 def test_analizza_html_eccezione(monkeypatch):
     # Testo l'exeption
     mock_crash = Mock()
-    mock_crash.side_effect = requests.exceptions.ConnectionError(
-        "Errore di rete simulato"
-    )
+    mock_crash.side_effect = requests.exceptions.ConnectionError("Errore di rete simulato")
 
     monkeypatch.setattr("requests.get", mock_crash)
     risultato = analizza_html("https://link-finto.com")
@@ -103,9 +99,7 @@ def test_analizza_html_eccezione(monkeypatch):
         ),
     ],
 )
-def test_ricerca_successo(
-    monkeypatch, feed_possibili, html_possibili, localita_possibili
-):
+def test_ricerca_successo(monkeypatch, feed_possibili, html_possibili, localita_possibili):
     # Testo il caso in cui tutto sia corretto
     mock = Mock()
     mock.status_code = 200
@@ -123,9 +117,7 @@ def test_ricerca_notizia_feed_vuoto(monkeypatch):
     # Testo un caso in cui il feed sia vuoto
     mock_feed = Mock()
     mock_feed.entries = []
-    monkeypatch.setattr(
-        "scraper.catania_news.feedparser.parse", lambda *args, **kwargs: mock_feed
-    )
+    monkeypatch.setattr("scraper.catania_news.feedparser.parse", lambda *args, **kwargs: mock_feed)
 
     risultato = ricerca_notizia()
 
