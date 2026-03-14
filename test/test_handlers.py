@@ -251,4 +251,3 @@ async def test_button_handler_topic_selection(mocker):
     testo_inviato = kwargs.get("text") if "text" in kwargs else args[0]
 
     assert "Seleziona gli argomenti:" in testo_inviato
->>>>>>> 894099c (test: fix test failures, remove unused imports and update coverage for new handlers)
