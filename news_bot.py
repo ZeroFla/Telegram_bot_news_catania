@@ -45,7 +45,7 @@ async def monitor_news_job(context):
 if __name__ == "__main__":
     init_db()
 
-    app = ApplicationBuilder().token(TOKEN).build()
+    app = ApplicationBuilder().token(TOKEN).build() # type: ignore[arg-type]
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("cancel", cancel))
