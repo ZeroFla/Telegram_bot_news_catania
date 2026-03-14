@@ -47,9 +47,10 @@ git clone https://github.com/kodex154/Telegram_bot_news_catania.git
 cd Telegram_bot_news_catania
 ```
 
-2.Creare un ambiente virtule per python:
+2.Creare un ambiente virtule per python ed attivarlo:
 ```bash
 python -m venv .venv
+source .venv/bin/active
 ```
 
 3.Installare le dipendenze:
@@ -58,7 +59,7 @@ pip install -r requirements.txt
 ```
 4.Creare un file .env nella directory principale e inserire il token del bot:
 ```text
-BOT_TOKEN=inserire_qui_il_token
+BOT_TOKEN= inserire_qui_il_token
 ```
 ---
 
