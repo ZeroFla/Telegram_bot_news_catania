@@ -8,9 +8,7 @@ from telegram.ext import ContextTypes
 from bot.config import COMUNI_PROVINCIA, QUARTIERI_CATANIA, TOPIC_DISPONIBILI
 from bot.database.database import cancella_utente, check_user, salva_preferenze
 
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
+logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 
 
 def crea_tastiera_con_spunte(
@@ -66,9 +64,7 @@ def aggiorna_selezione(
                     lista_target.append(item)
         return lista_target
     else:
-        valore = (
-            f"{prefisso}{dizionario[data_key]}" if prefisso else dizionario[data_key]
-        )
+        valore = f"{prefisso}{dizionario[data_key]}" if prefisso else dizionario[data_key]
         if valore in lista_target:
             lista_target.remove(valore)
         else:
@@ -77,43 +73,23 @@ def aggiorna_selezione(
 
 
 def get_menu_home(zone_selezionate: List[str]) -> InlineKeyboardMarkup:
-    keyboard = [
-        [
-            InlineKeyboardButton(
-                "🌋 CATANIA CENTRO (Quartieri) 🏙️", callback_data="MENU_CATANIA"
-            )
-        ]
-    ]
-    keyboard.extend(
-        crea_tastiera_con_spunte(COMUNI_PROVINCIA, zone_selezionate, colonne=3)
-    )
-    keyboard.append(
-        [InlineKeyboardButton("➡️ VAI AI TOPIC", callback_data="VAI_AI_TOPIC")]
-    )
+    keyboard = [[InlineKeyboardButton("🌋 CATANIA CENTRO (Quartieri) 🏙️", callback_data="MENU_CATANIA")]]
+    keyboard.extend(crea_tastiera_con_spunte(COMUNI_PROVINCIA, zone_selezionate, colonne=3))
+    keyboard.append([InlineKeyboardButton("➡️ VAI AI TOPIC", callback_data="VAI_AI_TOPIC")])
     return InlineKeyboardMarkup(keyboard)
 
 
 def get_menu_quartieri(zone_selezionate: List[str]) -> InlineKeyboardMarkup:
     keyboard = crea_tastiera_con_spunte(QUARTIERI_CATANIA, zone_selezionate, colonne=2)
-    keyboard.append(
-        [InlineKeyboardButton("🔙 Indietro ai Comuni", callback_data="INDIETRO_COMUNI")]
-    )
-    keyboard.append(
-        [InlineKeyboardButton("➡️ VAI AI TOPIC", callback_data="VAI_AI_TOPIC")]
-    )
+    keyboard.append([InlineKeyboardButton("🔙 Indietro ai Comuni", callback_data="INDIETRO_COMUNI")])
+    keyboard.append([InlineKeyboardButton("➡️ VAI AI TOPIC", callback_data="VAI_AI_TOPIC")])
     return InlineKeyboardMarkup(keyboard)
 
 
 def get_menu_topics(topics_selezionati: List[str]) -> InlineKeyboardMarkup:
-    keyboard = crea_tastiera_con_spunte(
-        TOPIC_DISPONIBILI, topics_selezionati, colonne=2
-    )
-    keyboard.append(
-        [InlineKeyboardButton("🔙 Indietro ai Comuni", callback_data="INDIETRO_COMUNI")]
-    )
-    keyboard.append(
-        [InlineKeyboardButton("💾 SALVA E CONCLUDI", callback_data="SALVA_TUTTO")]
-    )
+    keyboard = crea_tastiera_con_spunte(TOPIC_DISPONIBILI, topics_selezionati, colonne=2)
+    keyboard.append([InlineKeyboardButton("🔙 Indietro ai Comuni", callback_data="INDIETRO_COMUNI")])
+    keyboard.append([InlineKeyboardButton("💾 SALVA E CONCLUDI", callback_data="SALVA_TUTTO")])
     return InlineKeyboardMarkup(keyboard)
 
 
@@ -149,10 +125,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     cancella_utente(user.id)
     context.user_data["preferenze"] = {"zone": [], "topics": []}  # type: ignore
 
-    await message.reply_text(
-        "🗑️ Il tuo account è stato eliminato con successo!\n\n"
-        "Clicca su /start per ricominciare."
-    )
+    await message.reply_text("🗑️ Il tuo account è stato eliminato con successo!\n\n" "Clicca su /start per ricominciare.")
 
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -181,9 +154,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         pass
 
 
-async def _is_valid_action(
-    query: Any, data: str, user_data: Dict[str, List[str]]
-) -> bool:
+async def _is_valid_action(query: Any, data: str, user_data: Dict[str, List[str]]) -> bool:
     if data == "VAI_AI_TOPIC" and not user_data["zone"]:
         await query.answer("⚠️ Seleziona almeno una zona!", show_alert=True)
         return False
@@ -193,9 +164,7 @@ async def _is_valid_action(
     return True
 
 
-async def _router_navigazione(
-    query: Any, data: str, user: Any, user_data: Dict[str, List[str]]
-) -> None:
+async def _router_navigazione(query: Any, data: str, user: Any, user_data: Dict[str, List[str]]) -> None:
     if data in ["MENU_CATANIA", "INDIETRO_COMUNI"]:
         await _gestisci_menu_principale(query, data, user_data)
     elif data == "VAI_AI_TOPIC" or data in TOPIC_DISPONIBILI:
@@ -206,27 +175,19 @@ async def _router_navigazione(
         await _gestisci_selezione_zone(query, data, user_data)
 
 
-async def _gestisci_menu_principale(
-    query: Any, data: str, user_data: Dict[str, List[str]]
-) -> None:
+async def _gestisci_menu_principale(query: Any, data: str, user_data: Dict[str, List[str]]) -> None:
     if data == "MENU_CATANIA":
         await query.edit_message_text(
             "Seleziona i Quartieri di Catania:",
             reply_markup=get_menu_quartieri(user_data["zone"]),
         )
     elif data == "INDIETRO_COMUNI":
-        await query.edit_message_text(
-            "Seleziona i Comuni:", reply_markup=get_menu_home(user_data["zone"])
-        )
+        await query.edit_message_text("Seleziona i Comuni:", reply_markup=get_menu_home(user_data["zone"]))
 
 
-async def _gestisci_selezione_topics(
-    query: Any, data: str, user_data: Dict[str, List[str]]
-) -> None:
+async def _gestisci_selezione_topics(query: Any, data: str, user_data: Dict[str, List[str]]) -> None:
     if data in TOPIC_DISPONIBILI:
-        user_data["topics"] = aggiorna_selezione(
-            user_data["topics"], data, TOPIC_DISPONIBILI, "TOPIC_TUTTI"
-        )
+        user_data["topics"] = aggiorna_selezione(user_data["topics"], data, TOPIC_DISPONIBILI, "TOPIC_TUTTI")
 
     testo_zone = ", ".join(user_data["zone"])
     if len(testo_zone) > 100:
@@ -239,29 +200,19 @@ async def _gestisci_selezione_topics(
     )
 
 
-async def _gestisci_selezione_zone(
-    query: Any, data: str, user_data: Dict[str, List[str]]
-) -> None:
+async def _gestisci_selezione_zone(query: Any, data: str, user_data: Dict[str, List[str]]) -> None:
     if data.startswith("Q_"):
-        user_data["zone"] = aggiorna_selezione(
-            user_data["zone"], data, QUARTIERI_CATANIA, "Q_TUTTA_CT", "Catania - "
-        )
+        user_data["zone"] = aggiorna_selezione(user_data["zone"], data, QUARTIERI_CATANIA, "Q_TUTTA_CT", "Catania - ")
         await query.edit_message_text(
             "Seleziona i Quartieri di Catania:",
             reply_markup=get_menu_quartieri(user_data["zone"]),
         )
     elif data.startswith("COM_"):
-        user_data["zone"] = aggiorna_selezione(
-            user_data["zone"], data, COMUNI_PROVINCIA, "COM_TUTTI"
-        )
-        await query.edit_message_text(
-            "Seleziona i Comuni:", reply_markup=get_menu_home(user_data["zone"])
-        )
+        user_data["zone"] = aggiorna_selezione(user_data["zone"], data, COMUNI_PROVINCIA, "COM_TUTTI")
+        await query.edit_message_text("Seleziona i Comuni:", reply_markup=get_menu_home(user_data["zone"]))
 
 
-async def _esegui_salvataggio(
-    query: Any, user: Any, user_data: Dict[str, List[str]]
-) -> None:
+async def _esegui_salvataggio(query: Any, user: Any, user_data: Dict[str, List[str]]) -> None:
     stringa_topics = ", ".join(user_data["topics"])
     stringa_zone = ", ".join(user_data["zone"])
     salva_preferenze(user.id, user.first_name, stringa_topics, stringa_zone)

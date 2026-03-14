@@ -14,9 +14,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 # Definiamo i tipi per chiarezza
 Notizia = Dict[str, Optional[str]]
 
-tutti_i_luoghi: List[str] = list(QUARTIERI_CATANIA.values()) + list(
-    COMUNI_PROVINCIA.values()
-)
+tutti_i_luoghi: List[str] = list(QUARTIERI_CATANIA.values()) + list(COMUNI_PROVINCIA.values())
 
 RSS_URL = "https://www.cataniatoday.it/rss"
 

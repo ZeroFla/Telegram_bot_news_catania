@@ -65,23 +65,9 @@ def test_clean_db(mock_db):
     # Pulisco il DB
     mock_db.clean_db()
     # Test notizia più vecchia di 7 giorni
-    assert (
-        len(
-            mock_db.execute_query(
-                "SELECT 1 FROM news_inviate WHERE id_news = ?", (id_da_eliminare,)
-            )
-        )
-        == 0
-    )
+    assert len(mock_db.execute_query("SELECT 1 FROM news_inviate WHERE id_news = ?", (id_da_eliminare,))) == 0
     # Testo notizia nuova
-    assert (
-        len(
-            mock_db.execute_query(
-                "SELECT 1 FROM news_inviate WHERE id_news = ?", (76384,)
-            )
-        )
-        == 1
-    )
+    assert len(mock_db.execute_query("SELECT 1 FROM news_inviate WHERE id_news = ?", (76384,))) == 1
 
 
 def test_execute_query(mock_db):

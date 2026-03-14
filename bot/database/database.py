@@ -55,9 +55,7 @@ def check_news(id_news):
 
     # Se non c'è, la aggiungiamo includendo il timestamp attuale
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    execute_query(
-        "INSERT INTO news_inviate (id_news, time_stamp) VALUES (?, ?)", (id_news, now)
-    )
+    execute_query("INSERT INTO news_inviate (id_news, time_stamp) VALUES (?, ?)", (id_news, now))
     return False
 
 
@@ -70,9 +68,7 @@ def clean_db():
 
 def check_user(id_telegram):
     # Verifica che un'utente sia già registrato nel DB
-    risultato = execute_query(
-        "SELECT comuni,topics FROM utenti WHERE id_telegram = ?", (id_telegram,)
-    )
+    risultato = execute_query("SELECT comuni,topics FROM utenti WHERE id_telegram = ?", (id_telegram,))
 
     if risultato:
         comuni_str, topics_str = risultato[0]
