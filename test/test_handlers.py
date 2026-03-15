@@ -75,6 +75,7 @@ CASI_DI_TEST_TASTIERA = [
     CASI_DI_TEST_TASTIERA,
 )
 def test_crea_tastiera_con_spunte(dizionario_dati, lista_selezionati, colonne, risultato_atteso):
+    # Verifica che la tastiera generata sia corretta
     tastiera_generata = crea_tastiera_con_spunte(dizionario_dati, lista_selezionati, colonne)
     assert tastiera_generata == risultato_atteso
 
@@ -97,6 +98,7 @@ CASI_DI_TEST_SELEZIONE = [
 
 @pytest.mark.parametrize("lista_iniziale, data_key, prefisso, risultato_atteso", CASI_DI_TEST_SELEZIONE)
 def test_aggiorna_selezione(lista_iniziale, data_key, prefisso, risultato_atteso):
+    # Verifica che la selezione venga aggiornata correttamente
     lista_target = lista_iniziale.copy()
     risultato = aggiorna_selezione(lista_target, data_key, DIZ_TOPIC_MOCK, CHIAVE_TUTTI, prefisso)
     assert risultato == risultato_atteso
@@ -107,6 +109,7 @@ def test_aggiorna_selezione(lista_iniziale, data_key, prefisso, risultato_atteso
 
 @pytest.mark.asyncio
 async def test_start_utente_non_in_db(mocker):
+    # Testa start quando l'utente non è nel DB
     mock_db = mocker.patch("bot.handlers.check_user", return_value=None)
     mocker.patch("bot.handlers.get_menu_home", return_value="FINTO_MENU")
 
@@ -127,6 +130,7 @@ async def test_start_utente_non_in_db(mocker):
 
 @pytest.mark.asyncio
 async def test_cancel(mocker):
+    # Testa la cancellazione dell'utente
     mock_db_cancella = mocker.patch("bot.handlers.cancella_utente")
 
     update = MagicMock(spec=Update)
@@ -144,6 +148,7 @@ async def test_cancel(mocker):
 
 @pytest.mark.asyncio
 async def test_button_handler_errore_nessuna_zona(mocker):
+    # Testa errore quando si tenta di andare ai topic senza zone
     update = MagicMock(spec=Update)
     query = AsyncMock()
     update.callback_query = query
@@ -159,6 +164,7 @@ async def test_button_handler_errore_nessuna_zona(mocker):
 
 @pytest.mark.asyncio
 async def test_button_handler_navigazione_quartieri(mocker):
+    # Testa navigazione verso il menu quartieri
     mocker.patch("bot.handlers.get_menu_quartieri", return_value="TASTIERA_QUARTIERI")
 
     update = MagicMock(spec=Update)
@@ -177,6 +183,7 @@ async def test_button_handler_navigazione_quartieri(mocker):
 
 @pytest.mark.asyncio
 async def test_button_handler_salvataggio_finale(mocker):
+    # Testa il salvataggio finale delle preferenze
     mock_salva_db = mocker.patch("bot.handlers.salva_preferenze")
 
     update = MagicMock(spec=Update)
@@ -197,6 +204,7 @@ async def test_button_handler_salvataggio_finale(mocker):
 
 @pytest.mark.asyncio
 async def test_button_handler_bad_request_ignorata(mocker):
+    # Testa che BadRequest non blocchi il bot
     update = MagicMock(spec=Update)
     query = AsyncMock()
     update.callback_query = query
@@ -214,7 +222,7 @@ async def test_button_handler_bad_request_ignorata(mocker):
 
 @pytest.mark.asyncio
 async def test_button_handler_topic_selection(mocker):
-    """Test specifico per la nuova funzione di gestione topic"""
+    # Testa la selezione di un topic
     mocker.patch("bot.handlers.get_menu_topics", return_value="MENU_TOPIC")
 
     update = MagicMock(spec=Update)
