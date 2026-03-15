@@ -32,6 +32,28 @@ Questo progetto nasce per offrire un servizio di news. L'utente può navigare in
 
 ---
 
+## Struttura del Progetto
+
+```text
+Telegram_bot_news_catania/
+├── .github/workflows/   # CI/CD Pipeline
+├── assets               # Immagini per il README
+├── bot/
+│   ├── database/
+│   │   └── database.py  # Gestione DB
+│   ├── config.py        # Costanti e dati
+│   └── handlers.py      # Comandi e bottoni
+├── scraper/
+│   └── catania_news.py  # Web scraping
+├── test/                # Unit tests
+├── .gitignore           # File esclusi
+├── README.md            # Documentazione
+├── news_bot.py          # Script principale
+└── requirements.txt     # Dipendenze
+```
+
+---
+
 ## Requisiti di Sistema
 Per eseguire questo bot in locale, è necessario disporre di:
 * **Python 3.10+**
@@ -50,7 +72,7 @@ cd Telegram_bot_news_catania
 2.Creare un ambiente virtule per python ed attivarlo:
 ```bash
 python -m venv .venv
-source .venv/bin/active
+source .venv/bin/activate
 ```
 
 3.Installare le dipendenze:
@@ -59,7 +81,7 @@ pip install -r requirements.txt
 ```
 4.Creare un file .env nella directory principale e inserire il token del bot:
 ```text
-BOT_TOKEN= inserire_qui_il_token
+TELEGRAM_TOKEN = inserire_qui_il_token
 ```
 ---
 
