@@ -14,10 +14,12 @@ logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s
 def crea_tastiera_con_spunte(
     dizionario_dati: Dict[str, str], lista_selezionati: List[str], colonne: int = 3
 ) -> List[List[InlineKeyboardButton]]:
+    # Crea tastiera con spunte sugli elementi selezionati
     keyboard = []
     riga = []
 
     for chiave, nome_chiaro in dizionario_dati.items():
+        # Controlla se l'elemento è selezionato
         is_selected = False
 
         if nome_chiaro in lista_selezionati:
@@ -25,6 +27,7 @@ def crea_tastiera_con_spunte(
         elif f"Catania - {nome_chiaro}" in lista_selezionati:
             is_selected = True
 
+        # Aggiunge la spunta se selezionato
         testo = f"✅ {nome_chiaro}" if is_selected else nome_chiaro
         riga.append(InlineKeyboardButton(testo, callback_data=chiave))
 
@@ -44,6 +47,7 @@ def aggiorna_selezione(
     chiave_tutti: str,
     prefisso: str = "",
 ) -> List[str]:
+    # Aggiorna selezione singola o globale
     if data_key == chiave_tutti:
         tutti_i_valori = []
         for k, v in dizionario.items():
@@ -52,18 +56,22 @@ def aggiorna_selezione(
             valore_db = f"{prefisso}{v}" if prefisso else v
             tutti_i_valori.append(valore_db)
 
+        # Controlla se erano già tutti selezionati
         elementi_gia_presenti = [x for x in tutti_i_valori if x in lista_target]
 
         if len(elementi_gia_presenti) == len(tutti_i_valori):
+            # Deseleziona tutti
             for item in tutti_i_valori:
                 if item in lista_target:
                     lista_target.remove(item)
         else:
+            # Seleziona tutti
             for item in tutti_i_valori:
                 if item not in lista_target:
                     lista_target.append(item)
         return lista_target
     else:
+        # Gestisce selezione singola
         valore = f"{prefisso}{dizionario[data_key]}" if prefisso else dizionario[data_key]
         if valore in lista_target:
             lista_target.remove(valore)
@@ -73,6 +81,7 @@ def aggiorna_selezione(
 
 
 def get_menu_home(zone_selezionate: List[str]) -> InlineKeyboardMarkup:
+    # Menu principale dei Comuni
     keyboard = [[InlineKeyboardButton("🌋 CATANIA CENTRO (Quartieri) 🏙️", callback_data="MENU_CATANIA")]]
     keyboard.extend(crea_tastiera_con_spunte(COMUNI_PROVINCIA, zone_selezionate, colonne=3))
     keyboard.append([InlineKeyboardButton("➡️ VAI AI TOPIC", callback_data="VAI_AI_TOPIC")])
@@ -80,6 +89,7 @@ def get_menu_home(zone_selezionate: List[str]) -> InlineKeyboardMarkup:
 
 
 def get_menu_quartieri(zone_selezionate: List[str]) -> InlineKeyboardMarkup:
+    # Menu quartieri di Catania
     keyboard = crea_tastiera_con_spunte(QUARTIERI_CATANIA, zone_selezionate, colonne=2)
     keyboard.append([InlineKeyboardButton("🔙 Indietro ai Comuni", callback_data="INDIETRO_COMUNI")])
     keyboard.append([InlineKeyboardButton("➡️ VAI AI TOPIC", callback_data="VAI_AI_TOPIC")])
@@ -87,6 +97,7 @@ def get_menu_quartieri(zone_selezionate: List[str]) -> InlineKeyboardMarkup:
 
 
 def get_menu_topics(topics_selezionati: List[str]) -> InlineKeyboardMarkup:
+    # Menu dei topic selezionabili
     keyboard = crea_tastiera_con_spunte(TOPIC_DISPONIBILI, topics_selezionati, colonne=2)
     keyboard.append([InlineKeyboardButton("🔙 Indietro ai Comuni", callback_data="INDIETRO_COMUNI")])
     keyboard.append([InlineKeyboardButton("💾 SALVA E CONCLUDI", callback_data="SALVA_TUTTO")])
@@ -94,14 +105,18 @@ def get_menu_topics(topics_selezionati: List[str]) -> InlineKeyboardMarkup:
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    # Inizializza preferenze e mostra il menu principale
     user = update.effective_user
     message = update.message
     if not user or not message:
         return
 
+    # Crea struttura preferenze se mancante
     if "preferenze" not in context.user_data:  # type: ignore
         context.user_data["preferenze"] = {"zone": [], "topics": []}  # type: ignore
         data_db = check_user(user.id)
+
+        # Carica preferenze dal DB se presenti
         if data_db:
             zone_salvate, topics_salvati = data_db
             context.user_data["preferenze"]["zone"] = zone_salvate  # type: ignore
@@ -117,6 +132,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    # Cancella utente e resetta preferenze
     user = update.effective_user
     message = update.message
     if not user or not message:
@@ -129,6 +145,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    # Gestisce il clic sui pulsanti
     query = update.callback_query
     if not query or not query.data:
         return
@@ -137,24 +154,27 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     if not user:
         return
 
+    # Inizializza preferenze se mancanti
     if "preferenze" not in context.user_data:  # type: ignore
         context.user_data["preferenze"] = {"zone": [], "topics": []}  # type: ignore
 
     user_data = cast(Dict[str, List[str]], context.user_data["preferenze"])  # type: ignore
 
-    # Spostiamo i controlli di validazione in una funzione dedicata
+    # Controlla se l'azione è valida
     if not await _is_valid_action(query, query.data, user_data):
         return
 
     await query.answer()
 
     try:
+        # Sceglie cosa mostrare in base al pulsante
         await _router_navigazione(query, query.data, user, user_data)
     except BadRequest:
         pass
 
 
 async def _is_valid_action(query: Any, data: str, user_data: Dict[str, List[str]]) -> bool:
+    # Impedisce di procedere senza selezioni obbligatorie
     if data == "VAI_AI_TOPIC" and not user_data["zone"]:
         await query.answer("⚠️ Seleziona almeno una zona!", show_alert=True)
         return False
@@ -165,6 +185,7 @@ async def _is_valid_action(query: Any, data: str, user_data: Dict[str, List[str]
 
 
 async def _router_navigazione(query: Any, data: str, user: Any, user_data: Dict[str, List[str]]) -> None:
+    # Decide quale funzione chiamare in base al pulsante
     if data in ["MENU_CATANIA", "INDIETRO_COMUNI"]:
         await _gestisci_menu_principale(query, data, user_data)
     elif data == "VAI_AI_TOPIC" or data in TOPIC_DISPONIBILI:
@@ -176,6 +197,7 @@ async def _router_navigazione(query: Any, data: str, user: Any, user_data: Dict[
 
 
 async def _gestisci_menu_principale(query: Any, data: str, user_data: Dict[str, List[str]]) -> None:
+    # Mostra menu Comuni o Quartieri
     if data == "MENU_CATANIA":
         await query.edit_message_text(
             "Seleziona i Quartieri di Catania:",
@@ -186,9 +208,11 @@ async def _gestisci_menu_principale(query: Any, data: str, user_data: Dict[str, 
 
 
 async def _gestisci_selezione_topics(query: Any, data: str, user_data: Dict[str, List[str]]) -> None:
+    # Aggiorna selezione topic
     if data in TOPIC_DISPONIBILI:
         user_data["topics"] = aggiorna_selezione(user_data["topics"], data, TOPIC_DISPONIBILI, "TOPIC_TUTTI")
 
+    # Accorcia testo se troppo lungo
     testo_zone = ", ".join(user_data["zone"])
     if len(testo_zone) > 100:
         testo_zone = testo_zone[:100] + "..."
@@ -201,6 +225,7 @@ async def _gestisci_selezione_topics(query: Any, data: str, user_data: Dict[str,
 
 
 async def _gestisci_selezione_zone(query: Any, data: str, user_data: Dict[str, List[str]]) -> None:
+    # Aggiorna selezione Comuni o Quartieri
     if data.startswith("Q_"):
         user_data["zone"] = aggiorna_selezione(user_data["zone"], data, QUARTIERI_CATANIA, "Q_TUTTA_CT", "Catania - ")
         await query.edit_message_text(
@@ -213,6 +238,7 @@ async def _gestisci_selezione_zone(query: Any, data: str, user_data: Dict[str, L
 
 
 async def _esegui_salvataggio(query: Any, user: Any, user_data: Dict[str, List[str]]) -> None:
+    # Salva preferenze nel database
     stringa_topics = ", ".join(user_data["topics"])
     stringa_zone = ", ".join(user_data["zone"])
     salva_preferenze(user.id, user.first_name, stringa_topics, stringa_zone)
